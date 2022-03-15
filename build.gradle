@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'page.nafuchoco'
+version '0.1.0'
+
+task sourcesJar(type: Jar, dependsOn: 'classes') {
+    from sourceSets.main.allSource
+    archiveClassifier.set('sources')
+}
+task javadocJar(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    archiveClassifier.set('javadoc')
+}
+javadoc {
+    options.charSet = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+task beforeDeploy {
+    dependsOn('sourcesJar', 'javadocJar', 'shadowJar')
+}
+publishing {
+    publications {
+        mavenAar(MavenPublication) {
+            from components.java
+            afterEvaluate {
+                artifact javadocJar
+                artifact sourcesJar
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://m2.dv8tion.net/releases' }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    compileOnly('net.dv8tion:JDA:5.0.0-alpha.9') {
+        exclude module: 'opus-java'
+    }
+}
